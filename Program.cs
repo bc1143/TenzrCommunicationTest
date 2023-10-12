@@ -5,6 +5,8 @@ namespace COMPortTerminal
 {
     class Program
     {
+        static SerialPort serialPort;
+
         static void Main(string[] args)
         {
             string comPortName = "COM4"; // Change to your desired COM port
@@ -12,7 +14,7 @@ namespace COMPortTerminal
 
             try
             {
-                SerialPort serialPort = new SerialPort(comPortName, baudRate);
+                serialPort = new SerialPort(comPortName, baudRate);
 
                 serialPort.DataReceived += SerialPort_DataReceived;
 
@@ -20,7 +22,17 @@ namespace COMPortTerminal
 
                 Console.WriteLine($"Connected to {comPortName} at {baudRate} Bd. Press Enter to exit.");
 
-                Console.ReadLine();
+                while (true)
+                {
+                    Console.WriteLine("Enter a command to send (or press Enter to exit):");
+                    string command = Console.ReadLine();
+                    Console.WriteLine(command);
+
+                    if (string.IsNullOrEmpty(command))
+                        break;
+
+                    SendCommand(command);
+                }
 
                 serialPort.Close();
             }
@@ -32,9 +44,22 @@ namespace COMPortTerminal
 
         private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort serialPort = (SerialPort)sender;
-            string data = serialPort.ReadExisting();
+            SerialPort receivedPort = (SerialPort)sender;
+            string data = receivedPort.ReadExisting();
             Console.Write(data);
+        }
+
+        private static void SendCommand(string command)
+        {
+            if (serialPort.IsOpen)
+            {
+                serialPort.Write(command);
+                Console.WriteLine($"Sent: {command}");
+            }
+            else
+            {
+                Console.WriteLine("Serial port is not open. Cannot send the command.");
+            }
         }
     }
 }

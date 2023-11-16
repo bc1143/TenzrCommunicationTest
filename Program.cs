@@ -1,15 +1,19 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
 
-
-namespace COMPortTerminal {
-    class Program {
+namespace COMPortTerminal
+{
+    class Program
+    {
         static SerialPort serialPort;
 
-        static void Main(string[] args) {
-            string comPortName = "COM9"; // Change to your desired COM port
+        static void Main(string[] args)
+        {
+            string comPortName = "COM4"; // Change to your desired COM port
             int baudRate = 921600;       // Change to your desired baud rate
 
-            try {
+            try
+            {
                 serialPort = new SerialPort(comPortName, baudRate);
 
                 serialPort.DataReceived += SerialPort_DataReceived;
@@ -18,43 +22,42 @@ namespace COMPortTerminal {
 
                 Console.WriteLine($"Connected to {comPortName} at {baudRate} Bd. Press Enter to exit.");
 
-                while (true) {
+                while (true)
+                {
                     Console.WriteLine("Enter a command to send (or press Enter to exit):");
                     string command = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(command)) 
-                        break;
-                    
                     Console.WriteLine(command);
 
-                    try {
-                        SendCommand(command);
-                    }   
-                    catch (Exception ex) {
-                        Console.WriteLine($"Error: {ex.Message}");
-                    }
+                    if (string.IsNullOrEmpty(command))
+                        break;
+
+                    SendCommand(command);
                 }
-                if (serialPort.IsOpen && serialPort != null) {
-                    serialPort.Close();
-                }
+
+                serialPort.Close();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
 
-        private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e) {
+        private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
             SerialPort receivedPort = (SerialPort)sender;
             string data = receivedPort.ReadExisting();
             Console.Write(data);
         }
 
-        private static void SendCommand(string command) {
-            if (serialPort.IsOpen) {
+        private static void SendCommand(string command)
+        {
+            if (serialPort.IsOpen)
+            {
                 serialPort.Write(command);
                 Console.WriteLine($"Sent: {command}");
             }
-            else {
+            else
+            {
                 Console.WriteLine("Serial port is not open. Cannot send the command.");
             }
         }

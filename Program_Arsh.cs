@@ -1,34 +1,31 @@
 ﻿using System.IO.Ports;
-using System.Text;
 
 namespace COMPortTerminal {
     class TenzrController {
+        private SerialPort _serialPort;
+        private string _comPortName;
+        private int _baudRate;
+        private bool _processRunning;
         
-        private SerialPort serialPort;
-        private string comPortName;
-        private int baudRate;
-        private bool processRunning;
-        private StringBuilder buffer = new StringBuilder();
-        
-        private TenzrController(string comPortName, int baudRate) {
-            this.comPortName = comPortName;
-            this.baudRate = baudRate;
-            serialPort = new SerialPort(comPortName, baudRate)
+        private TenzrController() {
+            _comPortName = "COM9"; // Manually adjust the COM PORT
+            _baudRate = 921600; // Manually adjust the baud rate / speed
+            _serialPort = new SerialPort(_comPortName, _baudRate)
             {
                 DataBits = 8,
                 Parity = Parity.None,
-                StopBits = StopBits.One
+                StopBits = StopBits.One,
+                Handshake = Handshake.XOnXOff
             };
-            processRunning = false;
+            _serialPort.DataReceived += serialPort_DataReceived;
+            _processRunning = false;
         }
 
         private void OpenSerialPort() {
             try {
-                serialPort.Open();
-                processRunning = true;
-                serialPort.DataReceived += serialPort_DataReceived;
-                Console.WriteLine($"Connected to {comPortName} at {baudRate} Bd. Press Enter to exit.");
-                Thread.Sleep(1000);
+                _serialPort.Open();
+                _processRunning = true;
+                Console.WriteLine($"Connected to {_comPortName} at {_baudRate} Bd. Press Enter to exit.");
             } catch (Exception ex) {
                 Console.WriteLine($"Error: {ex.Message}");
                 Environment.Exit(1);
@@ -37,38 +34,31 @@ namespace COMPortTerminal {
 
         private void CloseSerialPort() {
             try {
-                if (serialPort.IsOpen) {
-                    serialPort.Close();
-                    Console.WriteLine($"Connection with {comPortName} at {baudRate} Bd closed.");
+                if (_serialPort.IsOpen) {
+                    _serialPort.Close();
+                    Console.WriteLine($"Connection with {_comPortName} at {_baudRate} Bd closed.");
                 }
             } catch (Exception ex) {
                 Console.WriteLine($"Error: {ex.Message}");
                 Environment.Exit(1);
             } finally {
-                serialPort.Dispose();
+                _serialPort.Dispose();
             }
         }
 
         private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e) {
-            Console.WriteLine("I was here");
-            while (serialPort.BytesToRead > 0) {
-                char c = (char)serialPort.ReadChar();
-                buffer.Append(c);
-
-                if (c == '\n') {
-                    string receivedData = buffer.ToString().Trim();
-                    Console.WriteLine(receivedData);
-                    buffer.Clear();
-                }
+            while (_serialPort.BytesToRead > 0) {
+                string receivedData = _serialPort.ReadLine();
+                Console.WriteLine(receivedData);
             }
-            Console.WriteLine("I was here");
         }
  
         private void SendCommand(string command) {
             try {
-                if (serialPort.IsOpen) {
-                    serialPort.Write(command);
-                    Console.WriteLine("Sent");
+                if (_serialPort.IsOpen) {
+                    command += "\n";
+                    _serialPort.Write(command);
+                    Console.Write($"Sent: {command}");
                 }
                 else {
                     Console.WriteLine("Serial port is not open. Cannot send the command.");
@@ -80,19 +70,16 @@ namespace COMPortTerminal {
         }
 
         static void Main(string[] args) {
-            string comPortName = "COM9"; // Change to your desired COM port
-            int baudRate = 921600;       // Change to your desired baud rate
-
-            TenzrController tenzrController = new TenzrController(comPortName, baudRate);
+            TenzrController tenzrController = new TenzrController();
 
             tenzrController.OpenSerialPort();
             
-            while (tenzrController.processRunning) {
+            while (tenzrController._processRunning) {
                 Console.WriteLine("Enter a command to send ($stream, $menu):");
                 string? command = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(command) || command == null) {
                     Console.WriteLine("Exiting the TenzrController.");
-                    tenzrController.processRunning = false;
+                    tenzrController._processRunning = false;
                 } else {
                     tenzrController.SendCommand(command);
                 }

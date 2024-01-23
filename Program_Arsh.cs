@@ -56,7 +56,6 @@ namespace COMPortTerminal {
         private void SendCommand(string command) {
             try {
                 if (_serialPort.IsOpen) {
-                    command += "\n";
                     _serialPort.Write(command);
                     Console.Write($"Sent: {command}");
                 }
@@ -75,7 +74,7 @@ namespace COMPortTerminal {
             tenzrController.OpenSerialPort();
             
             while (tenzrController._processRunning) {
-                Console.WriteLine("Enter a command to send ($stream, $menu):");
+                Console.WriteLine("Enter a command to send ($stream;, $menu;):");
                 string? command = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(command) || command == null) {
                     Console.WriteLine("Exiting the TenzrController.");

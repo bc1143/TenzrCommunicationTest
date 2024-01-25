@@ -1,5 +1,4 @@
 ﻿using System.IO.Ports;
-using System.Reflection;
 
 namespace COMPortTerminal {
     class TenzrController {

@@ -15,7 +15,8 @@ namespace COMPortTerminal {
                 DataBits = 8,
                 Parity = Parity.None,
                 StopBits = StopBits.One,
-                Handshake = Handshake.XOnXOff
+                Handshake = Handshake.None,
+                DtrEnable = true
             };
             _serialPort.DataReceived += serialPort_DataReceived;
             _processRunning = false;

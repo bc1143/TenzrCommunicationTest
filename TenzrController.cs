@@ -22,7 +22,7 @@ namespace COMPortTerminal {
             };
             _serialPort.DataReceived += serialPort_DataReceived;
             _processRunning = false;
-            _directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "exportedData");
+            _directoryPath = Path.Combine(Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? Directory.GetCurrentDirectory(), "exportedData");
             _formattedDateTime = "";
 
         }
@@ -61,6 +61,10 @@ namespace COMPortTerminal {
                     // save to CSV when in streaming mode
                     if (_formattedDateTime != "") {
                         saveToCsv(receivedData);
+                    }
+                    //else just write to Console
+                    else {
+                        Console.WriteLine(receivedData);
                     }
                 }
                 

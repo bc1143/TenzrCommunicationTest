@@ -12,6 +12,8 @@
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
+/exported_data/
+
 # User-specific files
 *.rsuser
 *.suo
